@@ -1,4 +1,4 @@
-MCP_HEADERS = {"Accept": "application/json, text/event-stream"}
+from conftest import MCP_HEADERS
 
 
 def test_health(client) -> None:
