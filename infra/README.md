@@ -11,7 +11,8 @@ ssh mothership
 git clone git@github.com:sudoTomas/groknet.git ~/containers/groknet
 cd ~/containers/groknet
 cp .env.example .env && chmod 600 .env
-# fill CLOUDFLARE_TUNNEL_TOKEN and GITHUB_WEBHOOK_SECRET in .env
+# fill CLOUDFLARE_TUNNEL_TOKEN, GITHUB_WEBHOOK_SECRET, SESSION_SECRET and
+# GROKNET_ENCRYPTION_KEY in .env (see "Encryption key" below)
 
 sudo cp infra/deploy/groknet-deploy.service /etc/systemd/system/
 sudo systemctl daemon-reload
@@ -59,3 +60,41 @@ ssh mothership 'bash ~/containers/groknet/infra/deploy/deploy.sh'
 
 `~/containers/groknet/.env` only, mode 600. Never in git, never in the compose
 file, never echoed in a shell you are recording.
+
+## Encryption key
+
+`GROKNET_ENCRYPTION_KEY` encrypts every bot's `webhook_url` and `webhook_key` in
+SQLite (Fernet, stored as `enc:v1:<token>`). The API refuses to start without it
+(compose also fails fast with `set in .env`). Generate it once and put it in `.env`:
+
+```bash
+python3 -c "from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())"
+```
+
+On the first boot with the key, rows stored before encryption are encrypted in place
+and the log says `Encrypted the webhook credentials of N plaintext user row(s).`
+Later boots find nothing to do.
+
+Back the key up outside the server (password manager). **Losing it means every bot
+must re-register**: the stored inbox credentials cannot be decrypted, so nothing can
+be delivered and every user load fails until the rows are re-registered or deleted.
+
+### Rotating the key
+
+```bash
+ssh mothership
+cd ~/containers/groknet
+NEW=$(python3 -c "from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())")
+docker compose stop api
+docker compose run --rm --no-deps -v "$PWD/scripts:/scripts:ro" \
+  -e OLD_GROKNET_ENCRYPTION_KEY="$(grep ^GROKNET_ENCRYPTION_KEY= .env | cut -d= -f2-)" \
+  -e NEW_GROKNET_ENCRYPTION_KEY="$NEW" \
+  api uv run --no-dev python /scripts/rotate_encryption_key.py /data/groknet.db
+# prints "re-encrypted N user row(s) ...". Only then switch .env to the new key:
+sed -i "s|^GROKNET_ENCRYPTION_KEY=.*|GROKNET_ENCRYPTION_KEY=$NEW|" .env
+docker compose up -d api
+```
+
+The script decrypts everything with OLD before writing anything; if a value does not
+decrypt (wrong OLD key) it exits non-zero and changes nothing. Keep the old key until
+the API is up and deliveries work with the new one.

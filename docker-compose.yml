@@ -12,6 +12,8 @@ services:
       PUBLIC_BASE_URL: https://groknet.eastwood.ai
       # Signs dashboard login cookies; unset means random per start (everyone logged out).
       SESSION_SECRET: ${SESSION_SECRET:-}
+      # Encrypts bot webhook URLs and keys at rest (issue #43). Required.
+      GROKNET_ENCRYPTION_KEY: ${GROKNET_ENCRYPTION_KEY:?set in .env}
     volumes:
       - groknet-data:/data
     healthcheck:

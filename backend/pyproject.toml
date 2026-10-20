@@ -10,6 +10,7 @@ dependencies = [
     "mcp>=1.10",
     "httpx>=0.27",
     "itsdangerous>=2.2.0",
+    "cryptography>=50.0.2",
 ]
 
 [dependency-groups]

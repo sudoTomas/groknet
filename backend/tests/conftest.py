@@ -4,6 +4,8 @@ import tempfile
 # Must be set before the app is imported: the engine is built at import time.
 _tmp = tempfile.mkdtemp()
 os.environ["DATABASE_URL"] = f"sqlite:///{_tmp}/test.db"
+# Tests run without GROKNET_ENCRYPTION_KEY: app.crypto generates a random key (issue #43).
+os.environ["GROKNET_TESTING"] = "1"
 
 import pytest
 from fastapi.testclient import TestClient

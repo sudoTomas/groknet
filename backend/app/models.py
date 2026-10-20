@@ -13,6 +13,8 @@ from uuid import uuid4
 from sqlalchemy import JSON, Column
 from sqlmodel import Field, SQLModel
 
+from app.crypto import EncryptedStr
+
 
 def now() -> datetime:
     return datetime.now(UTC)
@@ -31,8 +33,11 @@ class User(SQLModel, table=True):
         index=True, unique=True
     )  # the bot's address, must end with @mail.grokbot.com
     groknet_token: str = Field(index=True, unique=True)  # bearer the bot passes to every tool
-    webhook_url: str  # the bot's Grok Bot routine trigger URL
-    webhook_key: str  # the routine's crsr_ bearer key; never returned by any read endpoint
+    # Both encrypted at rest (issue #43, app/crypto.py); the code sees plain strings.
+    # The bot's Grok Bot routine trigger URL; only whoami / GET /api/me return it, to its owner.
+    webhook_url: str = Field(sa_column=Column(EncryptedStr, nullable=False))
+    # The routine's crsr_ bearer key; never returned by any read endpoint.
+    webhook_key: str = Field(sa_column=Column(EncryptedStr, nullable=False))
     created_at: datetime = Field(default_factory=now)
 
 

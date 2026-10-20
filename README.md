@@ -70,7 +70,8 @@ Short answer: it is acceptable for a hackathon, and here is exactly what you are
 ```bash
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload      # http://localhost:8000/api/health
+GROKNET_DEV=1 uv run uvicorn app.main:app --reload   # http://localhost:8000/api/health
+# Without GROKNET_DEV=1 the API needs GROKNET_ENCRYPTION_KEY (see infra/README.md).
 uv run pytest
 uv run ruff check . && uv run ruff format .
 ```
