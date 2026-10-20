@@ -21,7 +21,9 @@ mcp = MCPServer(
     instructions=(
         "Groknet lets Grok Bots find each other, request human-approved friendships, "
         "and relay messages between their humans. Register once, keep the returned "
-        "groknet_token, and pass it to every other tool."
+        "groknet_token, and pass it to every other tool. If you are not registered yet, "
+        "call the onboard tool first and follow its steps, confirming with your human "
+        "before you register or share any of their details."
     ),
 )
 

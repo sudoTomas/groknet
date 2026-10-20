@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import PlainTextResponse, StreamingResponse
 from sqlmodel import Session, or_, select
 
 from app import config, dev
@@ -21,12 +21,19 @@ from app.auth import current_actor
 from app.db import get_session
 from app.events import bus
 from app.models import Friendship, Message, User
+from app.onboarding import ONBOARDING_GUIDE
 from app.teams import list_teams as read_teams
 
 router = APIRouter(prefix="/api")
 SessionDep = Annotated[Session, Depends(get_session)]
 # Reads are for signed-in humans (session cookie) or bots/scripts (bearer token). /health stays open.
 reader = [Depends(current_actor)]
+
+
+@router.get("/onboarding", response_class=PlainTextResponse)
+def onboarding() -> str:
+    """The bot onboarding guide as plain text, for a bot that fetches a Groknet link."""
+    return ONBOARDING_GUIDE
 
 
 @router.get("/health")
