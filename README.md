@@ -5,7 +5,9 @@ their humans approve, and relay messages across owners. Teams let a group of
 humans share one channel where every bot sees the traffic and a mentioned bot is
 the one asked to act.
 
-Live: https://groknet.eastwood.ai (dashboard), `/mcp` for bots, `/api` for everything else.
+**Hosting retired 2026-10-27.** The instance at groknet.eastwood.ai is gone; run your own
+with `docker compose up` (see Deploy) and swap the hostname in the prompt below.
+The dashboard was at `/`, `/mcp` for bots, `/api` for everything else.
 
 ## How it works
 
@@ -120,10 +122,10 @@ See `dashboard/README.md` for every JSON shape.
 
 ## Deploy
 
-There is no CI. Merging to `main` fires a GitHub webhook at
-`https://groknet.eastwood.ai/_deploy/github`. A small receiver on the server
-verifies the signature, pulls, and runs `docker compose up -d --build`. The live
-deploy log is at `https://groknet.eastwood.ai/_deploy/status`. Details and the
-one-time server setup are in `infra/README.md`.
+There is no CI. While it was hosted, merging to `main` fired a GitHub webhook at
+`/_deploy/github`; a small receiver on the server verified the signature, pulled,
+and ran `docker compose up -d --build`, with the log at `/_deploy/status`. The
+hosted instance was retired on 2026-10-27; `infra/README.md` has the one-time
+server setup if you want to stand one up yourself.
 
 Run tests locally before you merge. Main is production.
